@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="history-page">
+    <header>
+        <h1>History</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="history.html">History</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Betting History</h2>
+        <div style="display: flex; gap: 1em; justify-content: center; margin-bottom: 1em;">
+            <div class="dropdown">
+                <button id="filter-all" class="filter-btn">All Picks</button>
+                <div class="dropdown-content">
+                    <button id="filter-week">Week</button>
+                    <button id="filter-year">Year</button>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button id="filter-team" class="filter-btn">Select a Team</button>
+                <div class="dropdown-content">
+                    <button>Arizona Cardinals</button>
+                    <button>Atlanta Falcons</button>
+                    <button>Baltimore Ravens</button>
+                    <button>Buffalo Bills</button>
+                    <button>Carolina Panthers</button>
+                    <button>Chicago Bears</button>
+                    <button>Cincinnati Bengals</button>
+                    <button>Cleveland Browns</button>
+                    <button>Dallas Cowboys</button>
+                    <button>Denver Broncos</button>
+                    <button>Detroit Lions</button>
+                    <button>Green Bay Packers</button>
+                    <button>Houston Texans</button>
+                    <button>Indianapolis Colts</button>
+                    <button>Jacksonville Jaguars</button>
+                    <button>Kansas City Chiefs</button>
+                    <button>Las Vegas Raiders</button>
+                    <button>Los Angeles Chargers</button>
+                    <button>Los Angeles Rams</button>
+                    <button>Miami Dolphins</button>
+                    <button>Minnesota Vikings</button>
+                    <button>New England Patriots</button>
+                    <button>New Orleans Saints</button>
+                    <button>New York Giants</button>
+                    <button>New York Jets</button>
+                    <button>Philadelphia Eagles</button>
+                    <button>Pittsburgh Steelers</button>
+                    <button>San Francisco 49ers</button>
+                    <button>Seattle Seahawks</button>
+                    <button>Tampa Bay Buccaneers</button>
+                    <button>Tennessee Titans</button>
+                    <button>Washington Commanders</button>
+                </div>
+            </div>
+        </div>
+        <p>Your past bets will appear here.</p>
+        <div class="history-grid" id="picks-grid">
+            <!-- Rows will be dynamically inserted here -->
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 Odds Academy</p>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const userId = 'exampleUserId'; // Replace with actual user ID from authentication
+
+            async function fetchPicks() {
+                try {
+                    const response = await fetch(`/get-picks?userId=${userId}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch picks');
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error fetching picks:', error);
+                    throw error;
+                }
+            }
+
+            async function fetchOdds() {
+                try {
+                    const response = await fetch('/odds');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch odds');
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error fetching odds:', error);
+                    throw error;
+                }
+            }
+
+            async function renderPicks() {
+                const picksGrid = document.getElementById('picks-grid');
+                picksGrid.innerHTML = '';
+
+                try {
+                    const [picks, games] = await Promise.all([fetchPicks(), fetchOdds()]);
+
+                    if (picks.length === 0) {
+                        picksGrid.innerHTML = '<div class="no-picks">No picks found.</div>';
+                        return;
+                    }
+
+                    picks.forEach(pick => {
+                        const game = games.find(g => {
+                            const homeMatch = g.home_team === pick.teamName || g.home_team === pick.opponentName;
+                            const awayMatch = g.away_team === pick.teamName || g.away_team === pick.opponentName;
+                            return g.id === pick.matchupId || (homeMatch && awayMatch);
+                        });
+
+                        const gameTime = game ? new Date(game.commence_time).toLocaleString() : 'Unknown';
+                        const homeTeam = game ? game.home_team : 'Unknown';
+                        const awayTeam = game ? game.away_team : 'Unknown';
+
+                        const row = `
+                            <div class="history-game">
+                                <div class="picked-team" style="font-weight: bold; font-size: 1.2em; margin-bottom: 0.5em;">
+                                    ${pick.teamName}
+                                </div>
+                                <div class="team-logos">
+                                    <div class="team">vs: ${pick.opponentName}</div>
+                                </div>
+                                <div class="game-info">
+                                    <div class="time">Game Time: ${gameTime}</div>
+                                </div>
+                            </div>
+                        `;
+                        picksGrid.insertAdjacentHTML('beforeend', row);
+                    });
+                } catch (error) {
+                    picksGrid.innerHTML = '<div class="error">Failed to load data.</div>';
+                }
+            }
+
+            renderPicks();
+        });
+    </script>
+</body>
+</html>

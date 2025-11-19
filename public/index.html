@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Odds Academy</title>
+  <!-- Twentieth Century font via Monotype.com --->
+  <link
+    href="https://cdn.fonts.net/kit/7b6b1e00-8b68-11ec-9ce3-0220834439f4/7b6b1e00-8b68-11ec-9ce3-0220834439f4.css"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+
+  <!-- <link
+    rel="icon"
+    type="image/png"
+    href="planet.png"
+  > -->
+  <script
+    defer
+    src="script.js"
+  ></script>
+</head>
+
+<body>
+    <div style="position:relative;width:100%;max-width:900px;margin:2rem auto 1rem auto;">
+      <img src="football_header.png" alt="Football Header" style="width:100%;display:block;">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;text-align:center;">
+  <div style="display:inline-block;background:rgba(17,17,17,0.6);border-radius:24px;padding:2em 3em 2em 3em;box-shadow:0 4px 24px rgba(0,0,0,0.25);z-index:10;position:relative;">
+          <div style="margin-bottom:1em;">
+            <span style="display:block;color:#fff;font-size:2.2em;font-weight:300;letter-spacing:0.05em;text-shadow:0 2px 8px #1F2937;font-family:'TwentiethCenturyLight',sans-serif;">Odds</span>
+            <span style="display:block;color:#fff;font-size:2.8em;font-weight:600;letter-spacing:0.08em;text-shadow:0 2px 8px #1F2937;line-height:1.1;font-family:'TwentiethCenturyMedium',sans-serif;">Academy</span>
+          </div>
+          <div style="display:flex;justify-content:center;gap:2em;">
+            <button class="header-btn">Start</button>
+            <button class="header-btn" id="howItWorksBtn">How It Works</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            // Start button scrolls to Upcoming Games
+            document.querySelector('.header-btn').addEventListener('click', function() {
+              const gamesSection = document.querySelector('#odds');
+              if (gamesSection) {
+                gamesSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            });
+            // How It Works button scrolls to How It Works section
+            document.getElementById('howItWorksBtn').addEventListener('click', function() {
+              const howItWorksSection = document.querySelector('h3');
+              if (howItWorksSection) {
+                howItWorksSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            });
+          });
+        </script>
+      </div>
+    </div>
+  <header>
+    <h1>Odds Academy</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+    </nav>
+  </header>
+  <h3 style="font-size:2.2em;">How It Works</h3>
+    <div style="margin-top:1em; display:flex; justify-content:center; gap:2em; font-size:1.2em; flex-wrap:wrap;">
+      <div class="instruction-step">
+        <img src="odds.png" alt="Odds Logo" class="instruction-step-icon" />
+        <div class="instruction-step-title">Step 1: Learn Odds</div>
+        <div class="instruction-step-desc">Understand Spreads,<br>Moneylines, Over/Unders</div>
+      </div>
+      <div class="instruction-step">
+        <img src="betting.png" alt="Betting Logo" class="instruction-step-icon" />
+        <div class="instruction-step-title">Step 2: Practice Betting</div>
+        <div class="instruction-step-desc">Use your 200 Academy Coins (resets every session)<br>to place bets</div>
+      </div>
+      <div class="instruction-step">
+        <img src="nfl.png" alt="NFL Logo" class="instruction-step-icon" />
+        <div class="instruction-step-title">Step 3: Pick NFL Teams</div>
+        <div class="instruction-step-desc">Make weekly picks using the odds and see how they play out</div>
+      </div>
+  </div>
+    <h3 style="margin-top:2em;">Betting Terms</h3>
+    <div class="betting-terms-row">
+      <div class="betting-term-box pink">
+        <div style="font-weight:bold; font-size:1.1em; margin-bottom:0.5em;">What’s the Money Line?</div>
+        <div style="text-align:left; font-size:1em;">
+          Pick who wins the game<br>
+          Minus (-): Favourite (safer pick, smaller reward).<br>
+          Plus (+): Underdog (riskier pick, bigger reward).<br><br>
+          <strong>Example:</strong><br>
+          Patriots -150 → Bet $150 to win $100.<br>
+          Bills +130 → Bet $100 to win $130.
+        </div>
+      </div>
+      <div class="betting-term-box pink">
+        <div style="font-weight:bold; font-size:1.1em; margin-bottom:0.5em;">What’s the Spread?</div>
+        <div style="text-align:left; font-size:1em;">
+          A way to make the game “even.” You’re betting on the margin of victory<br>
+          Favourite must win by more than the spread number.<br>
+          Underdog can lose by less than the spread number (or win outright).<br><br>
+          <strong>Example:</strong><br>
+          Patriots -3.5 → Must win by 4+ points.<br>
+          Bills +3.5 → Can lose by 3 or fewer, or win.
+        </div>
+      </div>
+      <div class="betting-term-box pink">
+        <div style="font-weight:bold; font-size:1.1em; margin-bottom:0.5em;">What’s the Over/Under?</div>
+        <div style="text-align:left; font-size:1em;">
+          You’re not betting on who wins — just the combined score of both teams<br>
+          Over: Predict the total will be higher.<br>
+          Under: Predict the total will be lower.<br><br>
+          <strong>Example:</strong><br>
+          Line is O/U 48.5<br>
+          Final score 27–24 (total = 51) → Over wins.<br>
+          Final score 21–20 (total = 41) → Under wins.
+        </div>
+      </div>
+    </div>
+  </header>
+  <main id="app">
+    <div id="coin-balance-bar" style="width:100%;max-width:900px;margin:0 auto 1.5em auto;display:flex;align-items:center;justify-content:center;gap:1em;background:#232f3e;border-radius:12px;padding:1em 0 1em 0;box-shadow:0 2px 12px #0005;">
+      <span style="display:inline-block;height:38px;width:38px;margin-right:0.5em;vertical-align:middle;">
+        <svg viewBox="0 0 64 64" width="38" height="38" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="28" fill="#FFD700" stroke="#E6B800" stroke-width="4"/>
+          <circle cx="32" cy="32" r="18" fill="#FFF8DC" opacity="0.4"/>
+          <ellipse cx="32" cy="40" rx="12" ry="5" fill="#FFF8DC" opacity="0.25"/>
+        </svg>
+      </span>
+      <span style="font-size:1.25em;font-family:'TwentiethCenturyMedium',sans-serif;color:#ffd700;letter-spacing:0.04em;">Academy Coins:</span>
+      <span id="coin-balance-amount" style="font-size:1.5em;font-family:'TwentiethCenturyMedium',sans-serif;color:#fff;">200</span>
+    </div>
+    <section id="odds">
+      <!-- NFL odds data will be displayed here. -->
+    </section>
+  </main>
+  <footer>
+    <i>Created by Olivia Weiss. Odds data via <a href="https://the-odds-api.com/">The Odds API</a></i>
+  </footer>
+</body>
+
+</html>
