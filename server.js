@@ -1,12 +1,11 @@
 // import Express library and activate it
 
-import express from "express";
-import fetch from "node-fetch";
-import process from "process";
-import dotenv from 'dotenv';
+import express from "express"; 
 import mongoose from 'mongoose';
+ 
+console.log( process.env.ODDS_KEY)
+console.log( process.env.TEST)
 
-dotenv.config();
 
 const app = express();
 
@@ -22,11 +21,13 @@ app.get('/', (req, res) => { res.redirect('/index.html') })
 // NFL Odds API proxy route
 app.get('/odds', async (req, res) => {
     try {
-        const apiKey = process.env.ODDS_API_KEY;
+        const apiKey = process.env.ODDS_KEY;
         if (!apiKey) {
             return res.status(500).json({ error: 'API key not set in environment variables.' });
         }
         const oddsUrl = `https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds?regions=us&apiKey=${apiKey}&markets=h2h,spreads,totals`;
+        
+        console.log('Fetching odds from URL:', oddsUrl);
         const response = await fetch(oddsUrl);
         if (!response.ok) {
             // Only read the body once as text for error logging
@@ -55,13 +56,14 @@ db.once('open', () => {
 });
 
 
-// Update the schema to include gameDate
+// Update the schema to include gameDate and week
 const pickSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     matchupId: { type: String, required: true },
     teamName: { type: String, required: true },
     opponentName: { type: String, required: true },
-    gameDate: { type: String, required: true }, // Added gameDate field
+    gameDate: { type: String, required: true },
+    week: { type: Number, required: true }, // NFL week number (1-18)
 });
 
 // Create a model for picks
@@ -69,15 +71,16 @@ const Pick = mongoose.model('Pick', pickSchema);
 
 // API endpoint to save user picks
 app.post('/save-pick', express.json(), async (req, res) => {
-    const { userId, matchupId, teamName, opponentName, gameDate } = req.body;
+    const { userId, matchupId, teamName, opponentName, gameDate, week } = req.body;
 
     if (!userId || !matchupId || !teamName || !opponentName || !gameDate) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    
     try {
-        console.log('Saving pick:', { userId, matchupId, teamName, opponentName, gameDate });
-        const newPick = new Pick({ userId, matchupId, teamName, opponentName, gameDate });
+        console.log('Saving pick:', { userId, matchupId, teamName, opponentName, gameDate, week });
+        const newPick = new Pick({ userId, matchupId, teamName, opponentName, gameDate, week });
         await newPick.save();
         res.status(201).json({ message: 'Pick saved successfully' });
     } catch (error) {
@@ -108,6 +111,7 @@ app.get('/get-picks', async (req, res) => {
                 teamName: pick.teamName,
                 opponentName: pick.opponentName || 'Unknown Opponent',
                 gameDate: pick.gameDate || 'Unknown',
+                week: pick.week || null,
             };
         });
         console.log('Fetched picks:', formattedPicks);

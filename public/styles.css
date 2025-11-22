@@ -252,10 +252,15 @@ html, body {
   width: 100%;
   text-align: center;
   font-family: 'TwentiethCenturyMedium', sans-serif;
+  font-size: 16px;
   background: #000;
   color: #fff;
   margin: 0;
   padding: 0;
+  zoom: 1;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
 }
 
 header {
@@ -263,22 +268,42 @@ header {
   top: 0;
   left: 0;
   width: 100%;
-  background-color: #333;
+  background-color: transparent;
   color: white;
-  padding: 10px 20px;
+  padding: 8px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 1000;
+  height: 60px;
+  font-size: 18px;
+  zoom: 1;
+  -webkit-transform: scale(1);
+  transform: scale(1);
 }
 
-nav a {
-  color: white;
-  text-decoration: none;
-  margin: 0 10px;
+header h1 {
+  font-family: 'TwentiethCenturyMedium', sans-serif;
+  font-size: 24px !important;
+  font-weight: 500 !important;
+  margin: 0;
 }
 
-nav a:hover {
+nav {
+  margin-right: 80px;
+  font-size: 18px;
+}
+
+header nav a {
+  color: white !important;
+  text-decoration: none !important;
+  margin: 0 10px !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  font-family: 'TwentiethCenturyMedium', sans-serif !important;
+}
+
+header nav a:hover {
   text-decoration: underline;
 }
 
@@ -318,20 +343,75 @@ iframe {
 
 /* History page game layout */
 .history-game {
-  background: #10141a;
+  background: #1a2332;
   border: 1px solid #3b4860;
   border-radius: 18px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
-  padding: 2em;
+  padding: 1.5em;
   margin: 1.5em auto;
-  max-width: 800px;
+  width: 500px;
+  min-height: 180px;
+  height: 180px;
   transition: transform 0.2s, box-shadow 0.2s;
   color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
 }
 
 .history-game:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.history-game .team-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  margin-bottom: 1em;
+}
+
+.history-game .team-header .team-logo-name {
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
+}
+
+.history-game .team-header img {
+  height: 60px;
+  width: auto;
+}
+
+.history-game .team-name {
+  font-size: 2em;
+  font-weight: 500;
+  color: #fff;
+}
+
+.history-game .game-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  font-size: 1.1em;
+  color: #bfc9db;
+  align-items: center;
+  padding-left: 0;
+}
+
+.history-game .game-details div {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.history-game .game-details strong {
+  color: #fff;
+  min-width: 110px;
+  display: inline-block;
+  text-align: right;
+  margin-right: 10px;
 }
 
 .history-game .team-logos {
@@ -343,7 +423,7 @@ iframe {
 }
 
 .history-game .team-logos img {
-  height: 80px;
+  height: 60px;
   width: auto;
   border-radius: 8px;
 }
@@ -369,15 +449,39 @@ iframe {
   display: inline-block;
 }
 
+.filter-btn {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: 1px solid #3b4860;
+  padding: 14px 28px;
+  font-size: 1.1em;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'TwentiethCenturyMedium', sans-serif;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.filter-btn:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+  transform: translateY(-2px);
+}
+
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #232f3e;
-  min-width: 160px;
+  background-color: #1a2332;
+  min-width: 100%;
   max-height: 300px; /* Set maximum height */
   overflow-y: auto; /* Enable scrolling */
+  overflow-x: visible; /* Allow nested dropdown to overflow */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  border: 1px solid #3b4860;
+  border-radius: 8px;
+  z-index: 100;
+  margin-top: 0;
+  padding-top: 5px;
+  top: 100%;
+  left: 0;
 }
 
 .dropdown-content button {
@@ -396,4 +500,62 @@ iframe {
 
 .dropdown:hover .dropdown-content {
   display: block;
+}
+
+/* Nested dropdown for weeks */
+.nested-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.nested-dropdown > button {
+  color: white;
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'TwentiethCenturyMedium', sans-serif;
+  font-size: 1em;
+}
+
+.nested-dropdown > button:hover {
+  background-color: #3b4860;
+}
+
+.nested-dropdown-content {
+  display: none !important;
+  position: fixed;
+  background-color: #1a2332;
+  min-width: 160px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid #3b4860;
+  border-radius: 8px;
+  z-index: 9999;
+}
+
+.nested-dropdown:hover .nested-dropdown-content {
+  display: block !important;
+}
+
+.nested-dropdown-content button {
+  color: white;
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'TwentiethCenturyMedium', sans-serif;
+}
+
+.nested-dropdown-content button:hover {
+  background-color: #3b4860;
 }

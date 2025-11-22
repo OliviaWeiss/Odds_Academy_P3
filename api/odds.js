@@ -1,6 +1,6 @@
 // Vercel serverless function for NFL odds API proxy
 export default async function handler(req, res) {
-  const apiKey = process.env.ODDS_API_KEY;
+  const apiKey = process.env.ODDS_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'API key not set in environment variables.' });
   }

@@ -2,26 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>History</title>
+    <link href="https://cdn.fonts.net/kit/7b6b1e00-8b68-11ec-9ce3-0220834439f4/7b6b1e00-8b68-11ec-9ce3-0220834439f4.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="history-page">
     <header>
-        <h1>History</h1>
+        <h1 style="font-size: 24px; font-weight: 500;">History</h1>
         <nav>
-            <a href="index.html">Home</a>
-            <a href="history.html">History</a>
+            <a href="index.html" style="font-size: 20px !important; font-weight: 500 !important; font-family: 'TwentiethCenturyMedium', sans-serif !important; line-height: 1 !important;">Home</a>
+            <a href="history.html" style="font-size: 20px !important; font-weight: 500 !important; font-family: 'TwentiethCenturyMedium', sans-serif !important; line-height: 1 !important;">History</a>
         </nav>
     </header>
     <main>
-        <h2>Betting History</h2>
-        <div style="display: flex; gap: 1em; justify-content: center; margin-bottom: 1em;">
+        <h2 style="font-size: 2.5em; font-weight: 300;">Betting History</h2>
+        <p style="margin-top: 0; margin-bottom: 0.5em;">Your past bets will appear here</p>
+        <div style="display: flex; gap: 1em; justify-content: center; margin-bottom: 1em; margin-top: 1.5em;">
             <div class="dropdown">
                 <button id="filter-all" class="filter-btn">All Picks</button>
                 <div class="dropdown-content">
-                    <button id="filter-week">Week</button>
-                    <button id="filter-year">Year</button>
+                    <div class="nested-dropdown">
+                        <button id="filter-week-parent">Week <span style="font-size: 0.7em;">▶</span></button>
+                        <div class="nested-dropdown-content">
+                            <button class="week-filter" data-week="1">Week 1</button>
+                            <button class="week-filter" data-week="2">Week 2</button>
+                            <button class="week-filter" data-week="3">Week 3</button>
+                            <button class="week-filter" data-week="4">Week 4</button>
+                            <button class="week-filter" data-week="5">Week 5</button>
+                            <button class="week-filter" data-week="6">Week 6</button>
+                            <button class="week-filter" data-week="7">Week 7</button>
+                            <button class="week-filter" data-week="8">Week 8</button>
+                            <button class="week-filter" data-week="9">Week 9</button>
+                            <button class="week-filter" data-week="10">Week 10</button>
+                            <button class="week-filter" data-week="11">Week 11</button>
+                            <button class="week-filter" data-week="12">Week 12</button>
+                            <button class="week-filter" data-week="13">Week 13</button>
+                            <button class="week-filter" data-week="14">Week 14</button>
+                            <button class="week-filter" data-week="15">Week 15</button>
+                            <button class="week-filter" data-week="16">Week 16</button>
+                            <button class="week-filter" data-week="17">Week 17</button>
+                            <button class="week-filter" data-week="18">Week 18</button>
+                        </div>
+                    </div>
+                    <div class="nested-dropdown">
+                        <button id="filter-year-parent">Year <span style="font-size: 0.7em;">▶</span></button>
+                        <div class="nested-dropdown-content">
+                            <button class="year-filter" data-year="2025">2025</button>
+                            <button class="year-filter" data-year="2026">2026</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="dropdown">
@@ -62,7 +92,6 @@
                 </div>
             </div>
         </div>
-        <p>Your past bets will appear here.</p>
         <div class="history-grid" id="picks-grid">
             <!-- Rows will be dynamically inserted here -->
         </div>
@@ -71,8 +100,71 @@
         <p>&copy; 2025 Odds Academy</p>
     </footer>
     <script>
+        // Calculate NFL week based on season start date
+        function getNFLWeek(gameDate) {
+            const date = new Date(gameDate);
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            
+            let seasonStart;
+            if (month < 8) {
+                if (year === 2025) {
+                    seasonStart = new Date('2024-09-05T00:00:00');
+                } else if (year === 2026) {
+                    seasonStart = new Date('2025-09-04T00:00:00');
+                } else {
+                    seasonStart = new Date(year - 1, 8, 5);
+                }
+            } else {
+                if (year === 2024) {
+                    seasonStart = new Date('2024-09-05T00:00:00');
+                } else if (year === 2025) {
+                    seasonStart = new Date('2025-09-04T00:00:00');
+                } else if (year === 2026) {
+                    seasonStart = new Date('2026-09-10T00:00:00');
+                } else {
+                    seasonStart = new Date(year, 8, 5);
+                }
+            }
+            
+            const diffTime = date - seasonStart;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const week = Math.floor(diffDays / 7) + 1;
+            
+            return Math.max(1, Math.min(18, week));
+        }
+
         document.addEventListener('DOMContentLoaded', async function () {
             const userId = 'exampleUserId'; // Replace with actual user ID from authentication
+            let allPicks = []; // Store all picks for filtering
+
+            // Position nested dropdown on hover
+            const nestedDropdown = document.querySelector('.nested-dropdown');
+            const nestedDropdownContent = document.querySelector('.nested-dropdown-content');
+            const weekParentBtn = document.getElementById('filter-week-parent');
+
+            if (nestedDropdown && nestedDropdownContent && weekParentBtn) {
+                nestedDropdown.addEventListener('mouseenter', function() {
+                    const rect = weekParentBtn.getBoundingClientRect();
+                    nestedDropdownContent.style.left = (rect.right + 2) + 'px';
+                    nestedDropdownContent.style.top = rect.top + 'px';
+                });
+            }
+
+            // Position year nested dropdown
+            const yearNestedDropdowns = document.querySelectorAll('.nested-dropdown');
+            const yearParentBtn = document.getElementById('filter-year-parent');
+            
+            if (yearNestedDropdowns.length > 1 && yearParentBtn) {
+                const yearNestedDropdown = yearNestedDropdowns[1];
+                const yearNestedContent = yearNestedDropdown.querySelector('.nested-dropdown-content');
+                
+                yearNestedDropdown.addEventListener('mouseenter', function() {
+                    const rect = yearParentBtn.getBoundingClientRect();
+                    yearNestedContent.style.left = (rect.right + 2) + 'px';
+                    yearNestedContent.style.top = rect.top + 'px';
+                });
+            }
 
             async function fetchPicks() {
                 try {
@@ -100,48 +192,135 @@
                 }
             }
 
-            async function renderPicks() {
+            function renderPicksData(picksToRender) {
                 const picksGrid = document.getElementById('picks-grid');
                 picksGrid.innerHTML = '';
 
-                try {
-                    const [picks, games] = await Promise.all([fetchPicks(), fetchOdds()]);
+                if (picksToRender.length === 0) {
+                    picksGrid.innerHTML = '<div class="no-picks" style="color: #bfc9db; font-size: 1.2em; margin-top: 2em;">No picks found.</div>';
+                    return;
+                }
 
-                    if (picks.length === 0) {
-                        picksGrid.innerHTML = '<div class="no-picks">No picks found.</div>';
-                        return;
-                    }
+                picksToRender.forEach(pick => {
+                    const nflTeamLogos = {
+                        "Arizona Cardinals": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/ARI",
+                        "Atlanta Falcons": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/ATL",
+                        "Baltimore Ravens": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/BAL",
+                        "Buffalo Bills": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/BUF",
+                        "Carolina Panthers": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/CAR",
+                        "Chicago Bears": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/CHI",
+                        "Cincinnati Bengals": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/CIN",
+                        "Cleveland Browns": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/CLE",
+                        "Dallas Cowboys": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/DAL",
+                        "Denver Broncos": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/DEN",
+                        "Detroit Lions": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/DET",
+                        "Green Bay Packers": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/GB",
+                        "Houston Texans": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/HOU",
+                        "Indianapolis Colts": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/IND",
+                        "Jacksonville Jaguars": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/JAX",
+                        "Kansas City Chiefs": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/KC",
+                        "Las Vegas Raiders": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/LV",
+                        "Los Angeles Chargers": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/LAC",
+                        "Los Angeles Rams": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/LAR",
+                        "Miami Dolphins": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/MIA",
+                        "Minnesota Vikings": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/MIN",
+                        "New England Patriots": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/NE",
+                        "New Orleans Saints": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/NO",
+                        "New York Giants": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/NYG",
+                        "New York Jets": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/NYJ",
+                        "Philadelphia Eagles": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/PHI",
+                        "Pittsburgh Steelers": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/PIT",
+                        "San Francisco 49ers": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/SF",
+                        "Seattle Seahawks": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/SEA",
+                        "Tampa Bay Buccaneers": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/TB",
+                        "Tennessee Titans": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/TEN",
+                        "Washington Commanders": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/WAS"
+                    };
 
-                    picks.forEach(pick => {
-                        const game = games.find(g => {
-                            const homeMatch = g.home_team === pick.teamName || g.home_team === pick.opponentName;
-                            const awayMatch = g.away_team === pick.teamName || g.away_team === pick.opponentName;
-                            return g.id === pick.matchupId || (homeMatch && awayMatch);
-                        });
+                    const teamLogo = nflTeamLogos[pick.teamName] || '';
+                    const gameDate = pick.gameDate ? new Date(pick.gameDate) : new Date();
+                    // Use stored week if available, otherwise calculate it
+                    const weekNumber = pick.week || getNFLWeek(pick.gameDate || new Date());
+                    const year = gameDate.getFullYear();
 
-                        const gameTime = game ? new Date(game.commence_time).toLocaleString() : 'Unknown';
-                        const homeTeam = game ? game.home_team : 'Unknown';
-                        const awayTeam = game ? game.away_team : 'Unknown';
-
-                        const row = `
-                            <div class="history-game">
-                                <div class="picked-team" style="font-weight: bold; font-size: 1.2em; margin-bottom: 0.5em;">
-                                    ${pick.teamName}
+                    const row = `
+                        <div class="history-game" data-team="${pick.teamName}" data-week="${weekNumber}" data-year="${year}">
+                            <div class="team-header">
+                                <div class="team-logo-name">
+                                    <img src="${teamLogo}" alt="${pick.teamName}">
+                                    <div class="team-name">${pick.teamName}</div>
                                 </div>
-                                <div class="team-logos">
-                                    <div class="team">vs: ${pick.opponentName}</div>
-                                </div>
-                                <div class="game-info">
-                                    <div class="time">Game Time: ${gameTime}</div>
+                                <div class="game-details">
+                                    <div><strong>Opponent:</strong> ${pick.opponentName || 'N/A'}</div>
+                                    <div><strong>Week:</strong> ${weekNumber}</div>
+                                    <div><strong>Year:</strong> ${year}</div>
                                 </div>
                             </div>
-                        `;
-                        picksGrid.insertAdjacentHTML('beforeend', row);
-                    });
+                        </div>
+                    `;
+                    picksGrid.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            async function renderPicks() {
+                try {
+                    const [picks, games] = await Promise.all([fetchPicks(), fetchOdds()]);
+                    allPicks = picks;
+                    renderPicksData(allPicks);
                 } catch (error) {
-                    picksGrid.innerHTML = '<div class="error">Failed to load data.</div>';
+                    const picksGrid = document.getElementById('picks-grid');
+                    picksGrid.innerHTML = '<div class="error" style="color: #ef4444; font-size: 1.2em; margin-top: 2em;">Failed to load data.</div>';
                 }
             }
+
+            // Filter functionality
+            document.getElementById('filter-all').addEventListener('click', function() {
+                renderPicksData(allPicks);
+            });
+
+            // Week filter functionality for individual weeks
+            const weekButtons = document.querySelectorAll('.week-filter');
+            weekButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const selectedWeek = parseInt(this.getAttribute('data-week'));
+                    const filtered = allPicks.filter(pick => {
+                        // Use stored week if available, otherwise calculate it
+                        const pickWeek = pick.week || getNFLWeek(pick.gameDate || new Date());
+                        return pickWeek === selectedWeek;
+                    });
+                    renderPicksData(filtered);
+                });
+            });
+
+            // Year filter functionality for individual years
+            const yearButtons = document.querySelectorAll('.year-filter');
+            yearButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const selectedYear = parseInt(this.getAttribute('data-year'));
+                    const filtered = allPicks.filter(pick => {
+                        const gameDate = pick.gameDate ? new Date(pick.gameDate) : new Date();
+                        return gameDate.getFullYear() === selectedYear;
+                    });
+                    renderPicksData(filtered);
+                });
+            });
+
+            // Team filter functionality
+            const teamButtons = document.querySelectorAll('.dropdown-content button');
+            teamButtons.forEach(button => {
+                if (!button.classList.contains('week-filter') && 
+                    !button.classList.contains('year-filter') && 
+                    button.id !== 'filter-week-parent' && 
+                    button.id !== 'filter-year-parent') {
+                    button.addEventListener('click', function() {
+                        const teamName = this.textContent.trim();
+                        const filtered = allPicks.filter(pick => 
+                            pick.teamName === teamName || pick.opponentName === teamName
+                        );
+                        renderPicksData(filtered);
+                    });
+                }
+            });
 
             renderPicks();
         });

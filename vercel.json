@@ -1,5 +1,7 @@
 {
   "rewrites": [
-    { "source": "/odds", "destination": "/api/odds" }
+    { "source": "/odds", "destination": "/api/odds" },
+    { "source": "/save-pick", "destination": "/api/save-pick" },
+    { "source": "/get-picks", "destination": "/api/get-picks" }
   ]
 }

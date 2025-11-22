@@ -34,6 +34,45 @@ const nflTeamLogos = {
   "Washington Commanders": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/WAS"
 };
 
+// Calculate NFL week based on season start date
+function getNFLWeek(gameDate) {
+  // 2024 NFL season started September 5, 2024 (Week 1)
+  // 2025 NFL season started September 4, 2025 (Week 1) - opening Thursday
+  // 2026 NFL season starts September 10, 2026 (Week 1)
+  const date = new Date(gameDate);
+  const year = date.getFullYear();
+  const month = date.getMonth(); // 0-11
+  
+  let seasonStart;
+  // If it's before September, use previous year's season
+  if (month < 8) { // Before September (months 0-7)
+    if (year === 2025) {
+      seasonStart = new Date('2024-09-05T00:00:00');
+    } else if (year === 2026) {
+      seasonStart = new Date('2025-09-04T00:00:00');
+    } else {
+      seasonStart = new Date(year - 1, 8, 5); // September 5th of previous year
+    }
+  } else { // September or later (months 8-11)
+    if (year === 2024) {
+      seasonStart = new Date('2024-09-05T00:00:00');
+    } else if (year === 2025) {
+      seasonStart = new Date('2025-09-04T00:00:00');
+    } else if (year === 2026) {
+      seasonStart = new Date('2026-09-10T00:00:00');
+    } else {
+      seasonStart = new Date(year, 8, 5); // September 5th
+    }
+  }
+  
+  const diffTime = date - seasonStart;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const week = Math.floor(diffDays / 7) + 1;
+  
+  // Clamp between 1 and 18
+  return Math.max(1, Math.min(18, week));
+}
+
 
 
 // Coin balance logic
@@ -141,7 +180,7 @@ function displayOdds(games) {
     }
     const matchupId = `matchup-${game.id || game.home_team.replace(/\s/g,'') + '-' + game.away_team.replace(/\s/g,'')}`;
     oddsSection.innerHTML += `
-      <div class="matchup" id="${matchupId}" style="margin-bottom:2.5em;background:#10141a;border-radius:18px;box-shadow:0 2px 16px #0005;padding:2em 0 1.5em 0;max-width:700px;margin-left:auto;margin-right:auto;">
+      <div class="matchup" id="${matchupId}" data-game-date="${game.commence_time}" style="margin-bottom:2.5em;background:#10141a;border-radius:18px;box-shadow:0 2px 16px #0005;padding:2em 0 1.5em 0;max-width:700px;margin-left:auto;margin-right:auto;">
         <div class="team-logos" style="display:flex;align-items:center;justify-content:center;gap:3.5em;margin-bottom:1.2em;cursor:pointer;">
           <img src="${homeLogo}" alt="${game.home_team}" class="team-pick" data-matchup="${matchupId}" data-team="${game.home_team}" style="height:110px;width:auto;transition:box-shadow 0.2s,outline 0.2s;"> 
           <span style="margin:0 1.5em;color:#fff;font-size:2.8em;font-family:'TwentiethCenturyMedium',sans-serif;">vs</span> 
@@ -246,11 +285,17 @@ document.addEventListener('click', function(e) {
 
     // Send the pick to the backend
     const userId = 'exampleUserId'; // Replace with actual user ID from authentication
+    const matchupDiv = document.getElementById(matchupId);
+    const gameDate = matchupDiv ? matchupDiv.getAttribute('data-game-date') : new Date().toISOString();
+    const week = getNFLWeek(gameDate);
+    
     console.log('Sending pick to backend:', {
         userId,
         matchupId,
         teamName: selected.getAttribute('data-team'),
         opponentName: opponent.getAttribute('data-team'),
+        gameDate,
+        week,
     });
     fetch('/save-pick', {
       method: 'POST',
@@ -260,6 +305,8 @@ document.addEventListener('click', function(e) {
         matchupId,
         teamName: selected.getAttribute('data-team'),
         opponentName: opponent.getAttribute('data-team'),
+        gameDate,
+        week,
       }),
     })
     .then(response => {
@@ -270,9 +317,34 @@ document.addEventListener('click', function(e) {
     })
     .then(data => {
       console.log('Pick saved:', data);
+      
+      // Deduct the bet amount from coin balance
+      coinBalance -= betAmount;
+      updateCoinBalanceDisplay();
+      
+      // Store the pick locally
+      userPicks[matchupId] = {
+        teamName: selected.getAttribute('data-team'),
+        bet: betAmount
+      };
+      
+      // Change button to green to indicate success
+      const btn = e.target;
+      btn.style.background = '#10b981';
+      btn.style.color = '#fff';
+      btn.textContent = 'Pick Saved!';
+      btn.disabled = true;
+      btn.style.opacity = '1';
+      
+      // Disable the bet amount input
+      if (input) input.disabled = true;
     })
     .catch(err => {
       console.error('Error saving pick:', err);
+      // Show error state
+      const btn = e.target;
+      btn.style.background = '#ef4444';
+      btn.textContent = 'Error - Try Again';
     });
   }
 });
