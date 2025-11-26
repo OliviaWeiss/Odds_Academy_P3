@@ -142,6 +142,79 @@ app.delete('/delete-picks', async (req, res) => {
 });
 
 
+// User schema for authentication
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Login endpoint
+app.post('/login', express.json(), async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    try {
+        const user = await User.findOne({ username });
+        
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+        
+        if (user.password !== password) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+        
+        res.status(200).json({ 
+            message: 'Login successful', 
+            userId: user._id.toString(),
+            username: user.username
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Login failed' });
+    }
+});
+
+// Signup endpoint
+app.post('/signup', express.json(), async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    if (password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    try {
+        const existingUser = await User.findOne({ username });
+        
+        if (existingUser) {
+            return res.status(409).json({ error: 'Username already exists' });
+        }
+        
+        const newUser = new User({ username, password });
+        await newUser.save();
+        
+        res.status(201).json({ 
+            message: 'User created successfully', 
+            userId: newUser._id.toString(),
+            username: newUser.username
+        });
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({ error: 'Signup failed' });
+    }
+});
+
+
 const port = 3000
 // app.listen(...): starts the web server and prints a message when it's ready.
 // You can then open the URL in your browser to use the app locally.

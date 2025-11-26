@@ -2,6 +2,8 @@
   "rewrites": [
     { "source": "/odds", "destination": "/api/odds" },
     { "source": "/save-pick", "destination": "/api/save-pick" },
-    { "source": "/get-picks", "destination": "/api/get-picks" }
+    { "source": "/get-picks", "destination": "/api/get-picks" },
+    { "source": "/login", "destination": "/api/login" },
+    { "source": "/signup", "destination": "/api/signup" }
   ]
 }

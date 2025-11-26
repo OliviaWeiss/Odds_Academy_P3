@@ -34,6 +34,32 @@ const nflTeamLogos = {
   "Washington Commanders": "https://static.www.nfl.com/t_q-best/league/api/clubs/logos/WAS"
 };
 
+// Check if user is logged in
+function checkAuth() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) {
+    window.location.href = 'login.html';
+    return null;
+  }
+  return userId;
+}
+
+// Logout functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('userId');
+      localStorage.removeItem('username');
+      window.location.href = 'login.html';
+    });
+  }
+  
+  // Check authentication
+  checkAuth();
+});
+
 // Calculate NFL week based on season start date
 function getNFLWeek(gameDate) {
   // 2024 NFL season started September 5, 2024 (Week 1)
@@ -284,7 +310,7 @@ document.addEventListener('click', function(e) {
     }
 
     // Send the pick to the backend
-    const userId = 'exampleUserId'; // Replace with actual user ID from authentication
+    const userId = localStorage.getItem('userId');
     const matchupDiv = document.getElementById(matchupId);
     const gameDate = matchupDiv ? matchupDiv.getAttribute('data-game-date') : new Date().toISOString();
     const week = getNFLWeek(gameDate);
@@ -354,7 +380,7 @@ document.addEventListener('DOMContentLoaded', fetchAndDisplayOdds);
 
 // Fetch saved picks from the backend and highlight them on page load
 document.addEventListener('DOMContentLoaded', function () {
-    const userId = 'exampleUserId'; // Replace with actual user ID from authentication
+    const userId = localStorage.getItem('userId');
 
     fetch(`/get-picks?userId=${userId}`)
         .then(response => {

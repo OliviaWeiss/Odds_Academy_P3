@@ -13,6 +13,7 @@
         <nav>
             <a href="index.html" style="font-size: 20px !important; font-weight: 500 !important; font-family: 'TwentiethCenturyMedium', sans-serif !important; line-height: 1 !important;">Home</a>
             <a href="history.html" style="font-size: 20px !important; font-weight: 500 !important; font-family: 'TwentiethCenturyMedium', sans-serif !important; line-height: 1 !important;">History</a>
+            <a href="#" id="logout-btn" style="font-size: 20px !important; font-weight: 500 !important; font-family: 'TwentiethCenturyMedium', sans-serif !important; line-height: 1 !important;">Logout</a>
         </nav>
     </header>
     <main>
@@ -135,7 +136,24 @@
         }
 
         document.addEventListener('DOMContentLoaded', async function () {
-            const userId = 'exampleUserId'; // Replace with actual user ID from authentication
+            // Check authentication
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Logout functionality
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('username');
+                    window.location.href = 'login.html';
+                });
+            }
+            
             let allPicks = []; // Store all picks for filtering
 
             // Position nested dropdown on hover
