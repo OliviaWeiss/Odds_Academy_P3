@@ -22,11 +22,15 @@ export default async function handler(req, res) {
     
     const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
     const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `${req.headers.origin || 'http://localhost:3000'}/api/auth/discord/callback`;
+    // Use DISCORD_REDIRECT_URI_DEV for local, DISCORD_REDIRECT_URI for production
+    const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI_DEV || process.env.DISCORD_REDIRECT_URI || `${req.headers.origin || 'http://localhost:3000'}/api/auth/discord/callback`;
     
     if (!DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET) {
+        console.error('API: Discord OAuth not configured - missing credentials');
         return res.status(500).send('Discord OAuth not configured');
     }
+    
+    console.log('API: Using redirect URI for callback:', REDIRECT_URI);
     
     try {
         // Exchange code for access token
