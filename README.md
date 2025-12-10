@@ -17,3 +17,4 @@ NASA_KEY=abc123def456...
 
 ## Vercel
 This project uses the [Express](https://expressjs.com) framework in a manner [supported by Vercel](https://vercel.com/docs/frameworks/backend/express). You can host an Express app for free as a [Vercel Function](https://vercel.com/docs/functions) a on a [Vercel Hobby Plan](https://vercel.com/docs/plans/hobby). When deploying to Vercel you can set your Environment Variables (e.g. `NASA_KEY`) during the deploy process.# Force redeploy Tue Dec  9 21:04:29 EST 2025
+
