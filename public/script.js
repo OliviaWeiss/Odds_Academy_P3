@@ -52,8 +52,27 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       localStorage.removeItem('userId');
       localStorage.removeItem('username');
+      localStorage.removeItem('discordUser');
       window.location.href = 'login.html';
     });
+  }
+  
+  // Display username in account dropdown
+  const username = localStorage.getItem('username');
+  const headerUsername = document.getElementById('header-username');
+  if (headerUsername && username) {
+    headerUsername.textContent = `Hello ${username}`;
+  }
+  
+  // Show Discord server link for Discord users
+  const discordUser = localStorage.getItem('discordUser');
+  const discordLink = document.getElementById('discord-server-link');
+  if (discordLink && discordUser === 'true') {
+    discordLink.style.display = 'inline-block';
+    // Set your Discord server invite link here
+    const discordInviteUrl = localStorage.getItem('discordInviteUrl') || 'YOUR_DISCORD_INVITE_LINK';
+    discordLink.href = discordInviteUrl;
+    discordLink.target = '_blank';
   }
   
   // Check authentication
@@ -128,78 +147,47 @@ function displayOdds(games) {
       fanduel = game.bookmakers.find(bm => bm.title === 'FanDuel');
     }
     if (fanduel && Array.isArray(fanduel.markets)) {
-      // Build odds grid: 3 columns (Moneyline, Spread, Over/Under), 2 rows (home/away), with small logos
-      const marketOrder = ['h2h', 'spreads', 'totals'];
-      const marketLabels = ['Moneyline', 'Spread', 'Over/Under'];
-      oddsGrid += `<div class="odds-grid" style="grid-template-columns: 40px repeat(3, 1fr);">
+      // Get all the odds data
+      const h2hMarket = fanduel.markets.find(m => m.key === 'h2h');
+      const spreadsMarket = fanduel.markets.find(m => m.key === 'spreads');
+      const totalsMarket = fanduel.markets.find(m => m.key === 'totals');
+      
+      const homeMoneyline = h2hMarket?.outcomes.find(o => o.name === game.home_team);
+      const awayMoneyline = h2hMarket?.outcomes.find(o => o.name === game.away_team);
+      const homeSpread = spreadsMarket?.outcomes.find(o => o.name === game.home_team);
+      const awaySpread = spreadsMarket?.outcomes.find(o => o.name === game.away_team);
+      const overOutcome = totalsMarket?.outcomes.find(o => o.name === 'Over');
+      const underOutcome = totalsMarket?.outcomes.find(o => o.name === 'Under');
+      
+      // Build odds grid with rows for each bet type and columns for each team
+      oddsGrid += `<div class="odds-grid" style="display:grid;grid-template-columns: 140px 1fr 1fr;gap:0.5em;max-width:500px;margin:0 auto;">
         <div></div>
-        <div class="odds-header">Over/Under
+        <div class="odds-header" style="text-align:center;font-weight:bold;color:#fff;font-size:1.1em;padding:0.5em;">${game.home_team}</div>
+        <div class="odds-header" style="text-align:center;font-weight:bold;color:#fff;font-size:1.1em;padding:0.5em;">${game.away_team}</div>
+        
+        <div class="odds-header" style="text-align:left;padding:0.5em;">Over/Under
           <span class="tooltip"><span class="tooltip-icon">&#9432;</span>
             <span class="tooltiptext">Bet on the total combined score of both teams. Over: higher than the line. Under: lower than the line.</span>
           </span>
         </div>
-        <div class="odds-header">Moneyline
+        <div style="text-align:center;color:#fff;font-size:1.1em;padding:0.5em;">${overOutcome ? `+${overOutcome.point}` : '-'}</div>
+        <div style="text-align:center;color:#fff;font-size:1.1em;padding:0.5em;">${underOutcome ? `-${underOutcome.point}` : '-'}</div>
+        
+        <div class="odds-header" style="text-align:left;padding:0.5em;">Moneyline
           <span class="tooltip"><span class="tooltip-icon">&#9432;</span>
             <span class="tooltiptext">Pick who wins the game. Minus (-): Favorite. Plus (+): Underdog.</span>
           </span>
         </div>
-        <div class="odds-header">Spread
+        <div style="text-align:center;color:#fff;font-size:1.1em;padding:0.5em;">${homeMoneyline ? `${homeMoneyline.price > 0 ? '+' : ''}${homeMoneyline.price}` : '-'}</div>
+        <div style="text-align:center;color:#fff;font-size:1.1em;padding:0.5em;">${awayMoneyline ? `${awayMoneyline.price > 0 ? '+' : ''}${awayMoneyline.price}` : '-'}</div>
+        
+        <div class="odds-header" style="text-align:left;padding:0.5em;">Spread
           <span class="tooltip"><span class="tooltip-icon">&#9432;</span>
             <span class="tooltiptext">Bet on the margin of victory. Favorite must win by more than the spread. Underdog can lose by less or win.</span>
           </span>
         </div>
-        <div style="display:flex;align-items:center;justify-content:center;"><img src="${homeLogo}" alt="${game.home_team}" style="height:28px;width:auto;"></div>
-        ${(() => {
-          // Home team row
-          const overUnder = (() => {
-            const market = fanduel.markets.find(m => m.key === 'totals');
-            if (!market) return '<div style="color:#888;">-</div>';
-            const outcome = market.outcomes.find(o => o.name === 'Over');
-            if (!outcome) return '<div style="color:#888;">-</div>';
-            return `<div style=\"color:#fff;font-size:1.1em;\">Over ${outcome.point} (${outcome.price > 0 ? '+' : ''}${outcome.price})</div>`;
-          })();
-          const moneyline = (() => {
-            const market = fanduel.markets.find(m => m.key === 'h2h');
-            if (!market) return '<div style="color:#888;">-</div>';
-            const outcome = market.outcomes.find(o => o.name === game.home_team);
-            if (!outcome) return '<div style="color:#888;">-</div>';
-            return `<div style=\"color:#fff;font-size:1.1em;\">${outcome.price > 0 ? '+' : ''}${outcome.price}</div>`;
-          })();
-          const spread = (() => {
-            const market = fanduel.markets.find(m => m.key === 'spreads');
-            if (!market) return '<div style="color:#888;">-</div>';
-            const outcome = market.outcomes.find(o => o.name === game.home_team);
-            if (!outcome) return '<div style="color:#888;">-</div>';
-            return `<div style=\"color:#fff;font-size:1.1em;\">${outcome.point > 0 ? '+' : ''}${outcome.point} (${outcome.price > 0 ? '+' : ''}${outcome.price})</div>`;
-          })();
-          return [overUnder, moneyline, spread].join('');
-        })()}
-        <div style="display:flex;align-items:center;justify-content:center;"><img src="${awayLogo}" alt="${game.away_team}" style="height:28px;width:auto;"></div>
-        ${(() => {
-          // Away team row
-          const overUnder = (() => {
-            const market = fanduel.markets.find(m => m.key === 'totals');
-            if (!market) return '<div style="color:#888;">-</div>';
-            const outcome = market.outcomes.find(o => o.name === 'Under');
-            if (!outcome) return '<div style="color:#888;">-</div>';
-            return `<div style=\"color:#fff;font-size:1.1em;\">Under ${outcome.point} (${outcome.price > 0 ? '+' : ''}${outcome.price})</div>`;
-          })();
-          const moneyline = (() => {
-            const market = fanduel.markets.find(m => m.key === 'h2h');
-            if (!market) return '<div style="color:#888;">-</div>';
-            const outcome = market.outcomes.find(o => o.name === game.away_team);
-            if (!outcome) return '<div style="color:#888;">-</div>';
-            return `<div style=\"color:#fff;font-size:1.1em;\">${outcome.price > 0 ? '+' : ''}${outcome.price}</div>`;
-          })();
-          const spread = (() => {
-            const market = fanduel.markets.find(m => m.key === 'spreads');
-            if (!market) return '<div style="color:#888;">-</div>';
-            const outcome = market.outcomes.find(o => o.name === game.away_team);
-            if (!outcome) return '<div style="color:#888;">-</div>';
-            return `<div style=\"color:#fff;font-size:1.1em;\">${outcome.point > 0 ? '+' : ''}${outcome.point} (${outcome.price > 0 ? '+' : ''}${outcome.price})</div>`;
-          })();
-          return [overUnder, moneyline, spread].join('');
-        })()}
+        <div style="text-align:center;color:#fff;font-size:1.1em;padding:0.5em;">${homeSpread ? `${homeSpread.point}` : '-'}</div>
+        <div style="text-align:center;color:#fff;font-size:1.1em;padding:0.5em;">${awaySpread ? `${awaySpread.point}` : '-'}</div>
       </div>`;
     } else {
       oddsGrid = '<div style="color:#888;text-align:center;">No odds available.</div>';
@@ -208,9 +196,15 @@ function displayOdds(games) {
     oddsSection.innerHTML += `
       <div class="matchup" id="${matchupId}" data-game-date="${game.commence_time}" style="margin-bottom:2.5em;background:#10141a;border-radius:18px;box-shadow:0 2px 16px #0005;padding:2em 0 1.5em 0;max-width:700px;margin-left:auto;margin-right:auto;">
         <div class="team-logos" style="display:flex;align-items:center;justify-content:center;gap:3.5em;margin-bottom:1.2em;cursor:pointer;">
-          <img src="${homeLogo}" alt="${game.home_team}" class="team-pick" data-matchup="${matchupId}" data-team="${game.home_team}" style="height:110px;width:auto;transition:box-shadow 0.2s,outline 0.2s;"> 
-          <span style="margin:0 1.5em;color:#fff;font-size:2.8em;font-family:'TwentiethCenturyMedium',sans-serif;">vs</span> 
-          <img src="${awayLogo}" alt="${game.away_team}" class="team-pick" data-matchup="${matchupId}" data-team="${game.away_team}" style="height:110px;width:auto;transition:box-shadow 0.2s,outline 0.2s;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.5em;">
+            <img src="${homeLogo}" alt="${game.home_team}" class="team-pick" data-matchup="${matchupId}" data-team="${game.home_team}" style="height:110px;width:auto;transition:box-shadow 0.2s,outline 0.2s;">
+            <div style="color:#fff;font-size:1em;text-align:center;font-family:'TwentiethCenturyMedium',sans-serif;">${game.home_team}</div>
+          </div>
+          <span style="margin:0 1.5em;color:#fff;font-size:2.8em;font-family:'TwentiethCenturyMedium',sans-serif;">vs</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.5em;">
+            <img src="${awayLogo}" alt="${game.away_team}" class="team-pick" data-matchup="${matchupId}" data-team="${game.away_team}" style="height:110px;width:auto;transition:box-shadow 0.2s,outline 0.2s;">
+            <div style="color:#fff;font-size:1em;text-align:center;font-family:'TwentiethCenturyMedium',sans-serif;">${game.away_team}</div>
+          </div>
         </div>
         <div style="margin-bottom:0.7em;color:#bfc9db;font-size:1.08em;">Start: ${commence}</div>
         ${oddsGrid}
