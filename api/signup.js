@@ -4,7 +4,11 @@ let cachedDb = null;
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String },
+  discordId: { type: String, unique: true, sparse: true },
+  discordUsername: { type: String },
+  email: { type: String },
+  avatar: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

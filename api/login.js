@@ -4,7 +4,11 @@ let cachedDb = null;
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String },
+  discordId: { type: String, unique: true, sparse: true },
+  discordUsername: { type: String },
+  email: { type: String },
+  avatar: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -42,6 +46,10 @@ export default async function handler(req, res) {
     }
     
     // Check password (plain text comparison - in production use bcrypt)
+    // Handle Discord users who might not have a password
+    if (!user.password) {
+      return res.status(401).json({ error: 'This account uses Discord login. Please sign in with Discord.' });
+    }
     if (user.password !== password) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
