@@ -45,6 +45,8 @@ export default async function handler(req, res) {
         });
         
         if (!tokenResponse.ok) {
+            const errorText = await tokenResponse.text();
+            console.error('Token exchange failed:', errorText);
             throw new Error('Failed to exchange code for token');
         }
         
@@ -85,9 +87,12 @@ export default async function handler(req, res) {
             await user.save();
         }
         
+        // Get Discord server invite URL from environment
+        const discordInvite = process.env.DISCORD_SERVER_INVITE || '';
+        
         // Redirect to login page with user info in URL params
         // The frontend will handle storing this in localStorage
-        const redirectUrl = `/login.html?discord_login=success&userId=${user._id}&username=${encodeURIComponent(user.username)}`;
+        const redirectUrl = `/login.html?discord_login=success&userId=${user._id}&username=${encodeURIComponent(user.username)}&discord_user=true&discord_invite=${encodeURIComponent(discordInvite)}`;
         res.redirect(redirectUrl);
         
     } catch (error) {
