@@ -1,9 +1,9 @@
 export default async function handler(req, res) {
     const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
-    // Use DISCORD_REDIRECT_URI_DEV for local, DISCORD_REDIRECT_URI for production
-    const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI_DEV || process.env.DISCORD_REDIRECT_URI || `${req.headers.origin || 'http://localhost:3000'}/api/auth/discord/callback`;
+    const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI;
     
-    if (!DISCORD_CLIENT_ID) {
+    if (!DISCORD_CLIENT_ID || !REDIRECT_URI) {
+        console.error('API: Discord OAuth not configured - missing credentials');
         return res.status(500).json({ error: 'Discord OAuth not configured' });
     }
     
