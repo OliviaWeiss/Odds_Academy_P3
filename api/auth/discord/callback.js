@@ -33,6 +33,8 @@ export default async function handler(req, res) {
     console.log('API: Using redirect URI for callback:', REDIRECT_URI);
     
     try {
+        console.log('Starting token exchange with Discord...');
+        
         // Exchange code for access token
         const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
             method: 'POST',
@@ -51,9 +53,12 @@ export default async function handler(req, res) {
         if (!tokenResponse.ok) {
             const errorText = await tokenResponse.text();
             console.error('Token exchange failed:', errorText);
+            console.error('Token response status:', tokenResponse.status);
+            console.error('Redirect URI used:', REDIRECT_URI);
             throw new Error('Failed to exchange code for token');
         }
         
+        console.log('Token exchange successful!');
         const tokenData = await tokenResponse.json();
         const accessToken = tokenData.access_token;
         
@@ -101,6 +106,8 @@ export default async function handler(req, res) {
         
     } catch (error) {
         console.error('Discord OAuth error:', error);
-        res.redirect('/login.html?error=discord_auth_failed');
+        console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
+        res.redirect(`/login.html?error=discord_auth_failed&details=${encodeURIComponent(error.message)}`);
     }
 }
