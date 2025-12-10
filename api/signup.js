@@ -29,28 +29,41 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { username, password } = req.body;
+  const { username, password, discordId, discordUsername, email, avatar } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password are required' });
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
   }
 
-  if (password.length < 6) {
+  // Password is only required for non-Discord users
+  if (!discordId && (!password || password.length < 6)) {
     return res.status(400).json({ error: 'Password must be at least 6 characters' });
   }
 
   try {
     await connectToDatabase();
     
-    // Check if user already exists
-    const existingUser = await User.findOne({ username });
+    // Check if user already exists by username or discordId
+    const existingUser = await User.findOne({ 
+      $or: [
+        { username },
+        ...(discordId ? [{ discordId }] : [])
+      ]
+    });
     
     if (existingUser) {
-      return res.status(409).json({ error: 'Username already exists' });
+      return res.status(409).json({ error: 'User already exists' });
     }
     
-    // Create new user (storing plain text password - in production use bcrypt)
-    const newUser = new User({ username, password });
+    // Create new user with Discord info if available
+    const userData = { username };
+    if (password) userData.password = password;
+    if (discordId) userData.discordId = discordId;
+    if (discordUsername) userData.discordUsername = discordUsername;
+    if (email) userData.email = email;
+    if (avatar) userData.avatar = avatar;
+    
+    const newUser = new User(userData);
     await newUser.save();
     
     res.status(201).json({ 
