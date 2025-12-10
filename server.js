@@ -158,11 +158,14 @@ const User = mongoose.model('User', userSchema);
 // Discord OAuth routes
 app.get('/api/auth/discord', (req, res) => {
     const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
-    const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `http://localhost:3000/api/auth/discord/callback`;
+    // Use DEV redirect URI for local development, otherwise use production
+    const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI_DEV || process.env.DISCORD_REDIRECT_URI || `http://localhost:3000/api/auth/discord/callback`;
     
     if (!DISCORD_CLIENT_ID) {
         return res.status(500).json({ error: 'Discord OAuth not configured' });
     }
+    
+    console.log('Initiating Discord OAuth with redirect URI:', REDIRECT_URI);
     
     // Construct Discord OAuth URL
     const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20email`;
@@ -180,11 +183,14 @@ app.get('/api/auth/discord/callback', async (req, res) => {
     
     const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
     const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || `http://localhost:3000/api/auth/discord/callback`;
+    // Use DEV redirect URI for local development, otherwise use production
+    const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI_DEV || process.env.DISCORD_REDIRECT_URI || `http://localhost:3000/api/auth/discord/callback`;
     
     if (!DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET) {
         return res.redirect('/login.html?error=discord_auth_failed');
     }
+    
+    console.log('Using redirect URI:', REDIRECT_URI);
     
     try {
         // Exchange code for access token
@@ -203,6 +209,8 @@ app.get('/api/auth/discord/callback', async (req, res) => {
         });
         
         if (!tokenResponse.ok) {
+            const errorText = await tokenResponse.text();
+            console.error('Discord token exchange failed:', tokenResponse.status, errorText);
             throw new Error('Failed to exchange code for token');
         }
         
